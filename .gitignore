@@ -1,0 +1,29 @@
+# === Binärfiler och objektfiler ===
+bin/
+obj/
+*.o
+*.out
+*.exe
+
+# === Buildfiler ===
+compile_commands.json
+
+# === Databasfiler ===
+*.db
+
+# === Backup/tempfiler ===
+*~
+*.swp
+*.bak
+.DS_Store
+
+# === Editorfiler ===
+*.code-workspace
+
+# === Make-clean targets ===
+*.d
+
+# === Ctags/Cscope/IDEtags ===
+tags
+cscope.*
+

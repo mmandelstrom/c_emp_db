@@ -8,7 +8,37 @@
 #include "common.h"
 #include "parse.h"
 
-void list_employees(struct dbheader_t *dbhdr, struct employee_t *employees);
+int remove_employee(struct dbheader_t *dbhdr, struct employee_t *employees, char *employeeName){
+	int deletionIndex = -1;
+
+	for (int i = 0; i < dbhdr->count; i++) {
+		if (strcmp(employees[i].name, employeeName) == 0) {
+			deletionIndex = i;
+			break;
+		}
+	}
+
+	if (deletionIndex == -1) {
+		printf("Employee: %s not found\n", employeeName);
+		return STATUS_ERROR;
+	}
+
+	for (int i = deletionIndex; i < dbhdr->count - 1; i++) {
+		employees[i] = employees[i + 1];
+	}
+
+	return STATUS_SUCCESS;
+}
+
+void list_employees(struct dbheader_t *dbhdr, struct employee_t *employees) {
+	for (int i = 0; i < dbhdr->count; i++) {
+		printf("Employee ID: %d\n", i);
+      		printf("\tName: %s\n", employees[i].name);
+      		printf("\tAddress: %s\n", employees[i].address);
+      		printf("\tHours: %d\n", employees[i].hours);
+	}
+}
+      
 
 int add_employee(struct dbheader_t *dbhdr, struct employee_t *employees, char *addstring){
 
@@ -77,13 +107,15 @@ int output_file(int fd, struct dbheader_t *dbhdr, struct employee_t *employees) 
 
 	for (int i = 0; i < count; i++) {
 		employees[i].hours = htonl(employees[i].hours);
-		printf("Writing..\n");
-		printf("%d %s\n", i, employees[i].name);
-		printf("%d %s\n", i, employees[i].address);
-		printf("%d %d\n", i, ntohl(employees[i].hours));
-
-
 		write(fd, &employees[i], sizeof(struct employee_t));
+	}
+
+
+
+	off_t new_size = sizeof(struct dbheader_t) + count * sizeof(struct employee_t);
+	if (ftruncate(fd, new_size) == -1) {
+ 		perror("ftruncate");
+		return STATUS_ERROR;
 	}
 
 	return STATUS_SUCCESS;
@@ -115,6 +147,8 @@ int validate_db_header(int fd, struct dbheader_t **headerOut)
 	header->version = ntohs(header->version);
 	header->count = ntohs(header->count);
 
+	printf("Header size: %d\n", header->filesize);
+
 	if (header->magic != HEADER_MAGIC)
 	{
 		printf("Improper header magic\n");
@@ -128,8 +162,11 @@ int validate_db_header(int fd, struct dbheader_t **headerOut)
 		return -1;
 	}
 
+
+
 	struct stat dbstat = {0};
 	fstat(fd, &dbstat);
+	printf("DBSTAT Size: %lld\n", dbstat.st_size);
 	if (header->filesize != dbstat.st_size) {
 		printf("Corrupt database file\n");
 		free(header);

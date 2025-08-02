@@ -19,6 +19,7 @@ void print_usage(char *argv[])
 
 int main(int argc, char *argv[])
 {
+	char *employeeName = NULL;
 	char *filepath = NULL;
 	char *portarg = NULL;
 	char *addstring = NULL;
@@ -30,7 +31,7 @@ int main(int argc, char *argv[])
 	struct dbheader_t *dbhdr = NULL;
 	struct employee_t *employees = NULL;
 
-	while ((c = getopt(argc, argv, "nf:a:p:l")) != -1)
+	while ((c = getopt(argc, argv, "nf:a:p:r:l")) != -1)
 	{
 		switch (c)
 		{
@@ -48,6 +49,9 @@ int main(int argc, char *argv[])
 			break;
 		case 'l':
 			list = true;
+			break;
+		case 'r':
+			employeeName = optarg;
 			break;
 		case '?':
 			printf("Unknown option -%c\n", c);
@@ -101,13 +105,35 @@ int main(int argc, char *argv[])
 
 	if (addstring) {
 		dbhdr->count++;
-		employees = realloc(employees, dbhdr->count * (sizeof(struct employee_t)));
+		struct employee_t *temp = realloc(employees, dbhdr->count * (sizeof(struct employee_t)));
 		if (employees == NULL) {
 			printf("Failed to reallocate memory for new employee\n");
  			return 0;
 		}
+		employees = temp;
 		add_employee(dbhdr, employees, addstring);
 	}
+
+	if (list) {
+		list_employees(dbhdr, employees);
+	}
+
+	if (employeeName) {
+		if (remove_employee(dbhdr, employees, employeeName) != STATUS_SUCCESS) {
+	     		printf("Unable to delete employee: %s\n", employeeName);
+			return 0;
+		}
+		
+		dbhdr->count--;
+		struct employee_t *temp = realloc(employees, dbhdr->count * (sizeof(struct employee_t)));
+		if (temp == NULL) {
+			printf("Failed to create temporary array while removing employee\n");
+			return STATUS_ERROR;
+		}
+		employees = temp;
+	}
+
+  
 
 	output_file(dbfd, dbhdr, employees);
 
