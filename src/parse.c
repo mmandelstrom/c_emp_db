@@ -7,6 +7,8 @@
 #include <unistd.h>
 #include "common.h"
 #include "parse.h"
+#include <stdbool.h>
+
 
 int remove_employee(struct dbheader_t *dbhdr, struct employee_t *employees, char *employeeName){
 	int deletionIndex = -1;
@@ -38,7 +40,26 @@ void list_employees(struct dbheader_t *dbhdr, struct employee_t *employees) {
       		printf("\tHours: %d\n", employees[i].hours);
 	}
 }
-      
+
+int update_hours(struct dbheader_t *dbhdr, struct employee_t *employees, char *newHours) {
+	char *name = strtok(newHours, ",");
+	char *hours = strtok(NULL, ",");
+	bool hoursUpdated = false;
+
+	for (int i = 0; i < dbhdr->count; i++) {
+		if (strcmp(name, employees[i].name) == 0) {
+			employees[i].hours = atoi(hours);
+			hoursUpdated = true;
+		}
+	}
+
+	if (!hoursUpdated){
+		printf("Unable to find employee %s\n", name);
+		return STATUS_ERROR;
+	}
+
+	return STATUS_SUCCESS;
+}		
 
 int add_employee(struct dbheader_t *dbhdr, struct employee_t *employees, char *addstring){
 

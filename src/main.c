@@ -19,6 +19,7 @@ void print_usage(char *argv[])
 
 int main(int argc, char *argv[])
 {
+	char *newHours = NULL;
 	char *employeeName = NULL;
 	char *filepath = NULL;
 	char *portarg = NULL;
@@ -31,7 +32,7 @@ int main(int argc, char *argv[])
 	struct dbheader_t *dbhdr = NULL;
 	struct employee_t *employees = NULL;
 
-	while ((c = getopt(argc, argv, "nf:a:p:r:l")) != -1)
+	while ((c = getopt(argc, argv, "nf:a:p:r:h:l")) != -1)
 	{
 		switch (c)
 		{
@@ -52,6 +53,9 @@ int main(int argc, char *argv[])
 			break;
 		case 'r':
 			employeeName = optarg;
+			break;
+		case 'h':
+			newHours = optarg;
 			break;
 		case '?':
 			printf("Unknown option -%c\n", c);
@@ -131,6 +135,13 @@ int main(int argc, char *argv[])
 			return STATUS_ERROR;
 		}
 		employees = temp;
+	}
+
+	if (newHours) {
+		if (update_hours(dbhdr, employees, newHours) != STATUS_SUCCESS) {
+			printf("Unable to update hours\n");
+			return 0;
+		}
 	}
 
   

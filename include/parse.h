@@ -15,6 +15,8 @@ struct employee_t {
 	char address[256];
 	unsigned int hours;
 };
+
+int update_hours(struct dbheader_t *dbhdr, struct employee_t *employees, char *newHours);
 int remove_employee(struct dbheader_t *dbhdr, struct employee_t *employees, char *employeeName);
 int create_db_header(int fd, struct dbheader_t **headerOut);
 int validate_db_header(int fd, struct dbheader_t **headerOut);
